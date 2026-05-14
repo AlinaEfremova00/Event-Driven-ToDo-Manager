@@ -1,16 +1,17 @@
-# k8s/argocd/apps/todo-app.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
+
 metadata:
   name: todo-app
   namespace: argocd
+
 spec:
   project: default
 
   source:
-    repoURL: https://github.com/AlinaEfremova00/Event-Driven-ToDo-Manager.git
+    repoURL: git@github.com:AlinaEfremova00/Event-Driven-ToDo-Manager.git
     targetRevision: main
-    path: k8s/apps/todo
+    path: k8s/manifests/todo-app
 
   destination:
     server: https://kubernetes.default.svc
@@ -20,7 +21,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-
-  env:
-    - name: TEST_MODE
-      value: "true"
