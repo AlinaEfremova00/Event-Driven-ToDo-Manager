@@ -9,7 +9,7 @@ spec:
   project: default
 
   source:
-    repoURL: git@github.com:AlinaEfremova00/Event-Driven-ToDo-Manager.git
+    repoURL: https://github.com/AlinaEfremova00/Event-Driven-ToDo-Manager.git
     targetRevision: main
     path: k8s/kafka
 
