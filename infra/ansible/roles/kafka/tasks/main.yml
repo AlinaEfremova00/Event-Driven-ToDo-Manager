@@ -1,0 +1,4 @@
+- name: Install Strimzi operator
+  kubernetes.core.k8s:
+    state: present
+    src: https://strimzi.io/install/latest?namespace=kafka
