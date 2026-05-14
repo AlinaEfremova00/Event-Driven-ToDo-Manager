@@ -1,4 +1,4 @@
-apiVersion: kafka.strimzi.io/v1
+apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
   name: todo-kafka
@@ -11,11 +11,6 @@ spec:
         port: 9092
         type: internal
         tls: false
-    storage:
-      type: ephemeral
-
-  zookeeper:
-    replicas: 1
     storage:
       type: ephemeral
 
