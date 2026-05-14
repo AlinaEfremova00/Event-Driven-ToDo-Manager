@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: task-service
+  namespace: todo-app
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: task-service
+
+  template:
+    metadata:
+      labels:
+        app: task-service
+
+    spec:
+      serviceAccountName: todo-service-account
+
+      containers:
+        - name: task-service
+
+          image: 00sweetsweet00/task-service:latest
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 8001
+
+          env:
+            - name: POSTGRES_HOST
+              value: postgres
+
+            - name: REDIS_HOST
+              value: redis
+
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: username
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password
+
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: database
