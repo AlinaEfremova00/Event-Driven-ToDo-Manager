@@ -13,10 +13,12 @@ spec:
         tls: false
     storage:
       type: ephemeral
+
   zookeeper:
     replicas: 1
     storage:
       type: ephemeral
+
   entityOperator:
     topicOperator: {}
     userOperator: {}
