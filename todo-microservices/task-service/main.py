@@ -21,14 +21,14 @@ REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 
 storage_uri = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
 
-#limiter = Limiter(
- #   key_func=get_remote_address,
- #   storage_uri=storage_uri,
-#)
+limiter = Limiter(
+   key_func=get_remote_address,
+   storage_uri=storage_uri,
+)
 
 app = FastAPI()
-#app.state.limiter = limiter
-#app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Подключаем статические файлы (HTML, CSS, JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")

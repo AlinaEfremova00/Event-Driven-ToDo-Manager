@@ -1,7 +1,7 @@
 import os
 from pymongo import MongoClient
 
-MONGO_HOST = os.getenv("MONGO_HOST", "localhost")
+MONGO_HOST = os.getenv("MONGO_HOST", "mongodb")
 MONGO_USER = os.getenv("MONGO_INITDB_ROOT_USERNAME", "eventuser")
 MONGO_PASSWORD = os.getenv("MONGO_INITDB_ROOT_PASSWORD", "eventpass")
 

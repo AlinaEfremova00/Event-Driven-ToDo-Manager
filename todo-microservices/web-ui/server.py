@@ -16,11 +16,11 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     port = 8081
-    print(f"Web UI запущен на http://localhost:{port}")
+    print(f"Web UI запущен на http://service-name:{port}")
     print("Откройте этот адрес в браузере")
     print("Нажмите Ctrl+C для остановки")
 
-    server = HTTPServer(('localhost', port), CORSRequestHandler)
+    server = HTTPServer(('service-name', port), CORSRequestHandler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

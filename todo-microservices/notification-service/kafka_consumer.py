@@ -2,7 +2,7 @@ from kafka import KafkaConsumer
 import json
 import os
 
-KAFKA_HOST = os.getenv("KAFKA_HOST", "localhost")
+KAFKA_HOST = os.getenv("KAFKA_HOST", "kafka")
 
 def safe_deserialize(x):
     try:

@@ -2,7 +2,7 @@ from kafka import KafkaProducer
 import json
 import os
 
-KAFKA_HOST = os.getenv("KAFKA_HOST", "localhost")
+KAFKA_HOST = os.getenv("KAFKA_HOST", "kafka")
 
 producer = None
 
