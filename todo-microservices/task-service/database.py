@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import uuid
 
-POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
 POSTGRES_USER = os.getenv("POSTGRES_USER", "todouser")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "todopass")
 POSTGRES_DB = os.getenv("POSTGRES_DB", "taskdb")

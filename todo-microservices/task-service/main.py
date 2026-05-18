@@ -6,17 +6,29 @@ import requests
 from database import SessionLocal, Task
 from pydantic import BaseModel
 from redis_client import redis_client, get_tasks_cache_key, get_task_cache_key, clear_tasks_cache
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.extension import _rate_limit_exceeded_handler
 import json
 import os
+import time
+
 
 # Настройка rate limiter
-limiter = Limiter(key_func=get_remote_address, storage_uri="redis://localhost:6379/0")
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+
+storage_uri = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+
+#limiter = Limiter(
+ #   key_func=get_remote_address,
+ #   storage_uri=storage_uri,
+#)
+
 app = FastAPI()
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+#app.state.limiter = limiter
+#app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Подключаем статические файлы (HTML, CSS, JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -45,8 +57,7 @@ class TaskOut(BaseModel):
     status: str
 
 
-@app.post("/tasks", response_model=TaskOut)
-@limiter.limit("5/second")
+@app.post("/tasks")
 def create_task(request: Request, task: TaskCreate, db: Session = Depends(get_db)):
     db_task = Task(title=task.title, status="NEW")
     db.add(db_task)
@@ -57,7 +68,7 @@ def create_task(request: Request, task: TaskCreate, db: Session = Depends(get_db
 
     try:
         requests.post(
-             "http://localhost:8002/event",
+             "http://event-service:8002/event",
             json={
                 "type": "TASK_CREATED",
                 "task": {"id": db_task.id, "title": db_task.title, "status": db_task.status}
@@ -67,11 +78,14 @@ def create_task(request: Request, task: TaskCreate, db: Session = Depends(get_db
     except Exception as e:
         print(f"Failed to send event: {e}")
 
-    return db_task
+    return {
+        "id": db_task.id,
+        "title": db_task.title,
+        "status": db_task.status
+    }
 
 
-@app.get("/tasks", response_model=list[TaskOut])
-@limiter.limit("10/second")
+@app.get("/tasks")
 def get_tasks(request: Request, db: Session = Depends(get_db)):
     cache_key = get_tasks_cache_key()
 
@@ -82,15 +96,19 @@ def get_tasks(request: Request, db: Session = Depends(get_db)):
 
     print("Fetching tasks from PostgreSQL")
     tasks = db.query(Task).all()
-    tasks_dict = [{"id": t.id, "title": t.title, "status": t.status} for t in tasks]
 
-    redis_client.setex(cache_key, 30, json.dumps(tasks_dict))
+    result = [
+        {"id": t.id, "title": t.title, "status": t.status}
+        for t in tasks
+    ]
 
-    return tasks
+    redis_client.setex(cache_key, 30, json.dumps(result))
+
+    return result
 
 
-@app.get("/tasks/{task_id}", response_model=TaskOut)
-@limiter.limit("10/second")
+@app.get("/tasks/{task_id}")
+#@limiter.limit("10/second")
 def get_task(request: Request, task_id: str, db: Session = Depends(get_db)):
     cache_key = get_task_cache_key(task_id)
 
@@ -106,11 +124,10 @@ def get_task(request: Request, task_id: str, db: Session = Depends(get_db)):
     task_dict = {"id": task.id, "title": task.title, "status": task.status}
     redis_client.setex(cache_key, 60, json.dumps(task_dict))
 
-    return task
-
+    return task_dict
 
 @app.delete("/tasks/{task_id}")
-@limiter.limit("5/second")
+#@limiter.limit("5/second")
 def delete_task(request: Request, task_id: str, db: Session = Depends(get_db)):
     task = db.query(Task).filter(Task.id == task_id).first()
     if not task:
