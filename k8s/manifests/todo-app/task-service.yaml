@@ -3,9 +3,15 @@ kind: Service
 metadata:
   name: task-service
   namespace: todo-app
+  labels:
+    app: task-service
+
 spec:
   selector:
     app: task-service
+
   ports:
-    - port: 8001
+    - name: http
+      port: 8001
       targetPort: 8001
+      protocol: TCP

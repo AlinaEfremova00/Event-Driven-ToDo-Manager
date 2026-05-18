@@ -6,3 +6,4 @@ pydantic
 requests
 redis
 slowapi
+prometheus-client

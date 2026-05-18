@@ -13,6 +13,9 @@ from slowapi.extension import _rate_limit_exceeded_handler
 import json
 import os
 import time
+from prometheus_client import Counter, Histogram, generate_latest
+from fastapi.responses import Response
+
 
 
 # Настройка rate limiter
@@ -32,6 +35,30 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Подключаем статические файлы (HTML, CSS, JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+REQUEST_COUNT = Counter(
+    "task_service_requests_total",
+    "Total requests",
+    ["method", "endpoint"]
+)
+
+REQUEST_LATENCY = Histogram(
+    "task_service_latency_seconds",
+    "Request latency"
+)
+
+
+@app.middleware("http")
+async def metrics_middleware(request, call_next):
+    start = time.time()
+    response = await call_next(request)
+    duration = time.time() - start
+
+    REQUEST_COUNT.labels(request.method, request.url.path).inc()
+    REQUEST_LATENCY.observe(duration)
+
+    return response
 
 @app.get("/")
 async def serve_index():
@@ -138,3 +165,7 @@ def delete_task(request: Request, task_id: str, db: Session = Depends(get_db)):
     clear_tasks_cache()
 
     return {"status": "deleted"}
+
+@app.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type="text/plain")

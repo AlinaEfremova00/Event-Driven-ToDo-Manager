@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: task-service-monitor
+  namespace: monitoring
+  labels:
+    release: monitoring
+
+spec:
+  selector:
+    matchLabels:
+      app: task-service
+
+  namespaceSelector:
+    matchNames:
+      - todo-app
+
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 5s
